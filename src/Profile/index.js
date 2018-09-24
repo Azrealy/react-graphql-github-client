@@ -38,15 +38,20 @@ const Profile = () => (
   }
 
   const { viewer } = data;
+  console.log(data)
 
   if (loading && !viewer) {
     return <Loading />;
   }
 
-      return <RepositoryList loading={loading} repositories={viewer.repositories} fetchMore={fetchMore}/>
+      return <RepositoryList
+                loading={loading}
+                repositories={viewer.repositories}
+                fetchMore={fetchMore}
+                entry={'viewer'}/>
   }}
   </Query>
 );
 
 
-export default graphql(GET_REPOSITORIES_OF_CURRENT_USER)(Profile);
+export default Profile;
