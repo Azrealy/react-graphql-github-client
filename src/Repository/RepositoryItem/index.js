@@ -17,6 +17,17 @@ const STAT_REPOSITORY = gql`
   }
 `
 
+const UNSTAR_REPOSITORY = gql`
+  mutation($id: ID!) {
+    removeStar(input: { starrableId: $id }) {
+      starrable {
+        id
+        viewerHasStarred
+      }
+    }
+  }
+`
+
 const WATCH_REPOSITORY = gql`
   mutation ($id: ID!, $viewerSubscription: SubscriptionState!) {
     updateSubscription(
@@ -72,15 +83,23 @@ const updateWatch = (
   });
 };
 
-const updateAddStar = (
+
+
+const updateStar = (actionType) => (
   client,
-    { data: { addStar: { starrable: { id } } } },) => {
+    { data: { [actionType]: { starrable: { id } } } },) => {
   const repository = client.readFragment({
     id: `Repository:${id}`,
     fragment: REPOSITORY_FRAGMENT
   })
+  let totalCount = repository.stargazers.totalCount 
+  if (actionType === 'addStar') {
+    totalCount = totalCount + 1;
+  } 
 
-  const totalCount = repository.stargazers.totalCount + 1;
+  if (actionType === 'removeStar') {
+    totalCount = totalCount - 1;
+  }
   client.writeFragment({
     id: `Repository:${id}`,
     fragment: REPOSITORY_FRAGMENT,
@@ -117,7 +136,7 @@ const RepositoryItem = ({
         <Mutation 
           mutation={STAT_REPOSITORY} 
           variables={{id}}
-          update={updateAddStar}>
+          update={updateStar('addStar')}>
           {(addStar, { data, loading, error }) => (
             <Button
               className={'RepositoryItem-title-action'}
@@ -128,7 +147,19 @@ const RepositoryItem = ({
             </Button>)}
       </Mutation>
           ) : (
-            <span>he </span>
+            <Mutation 
+            mutation={UNSTAR_REPOSITORY} 
+            variables={{id}}
+            update={updateStar('removeStar')}>
+            {(removeStar, { data, loading, error }) => (
+              <Button
+                className={'RepositoryItem-title-action'}
+                onClick={removeStar}
+              >
+                {stargazers.totalCount} 
+              Unstar 
+              </Button>)}
+        </Mutation>
           )
           }
           <Mutation

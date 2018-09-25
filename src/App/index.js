@@ -9,7 +9,7 @@ import './style.css';
 
 class App extends Component {
   state = {
-    organizationName: 'the-road-to-learn-react',
+    organizationName: 'facebook',
   };
 
   onOrganizationSearch = value => {
